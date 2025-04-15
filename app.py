@@ -1,8 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import csv
+from models import db, User, Need, Resource, Service
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # required for session to work
+
+@app.before_request
+def before_request():
+    if db.is_closed():
+        db.connect()
+
+@app.teardown_request
+def teardown_request(exception):
+    if not db.is_closed():
+        db.close()
 
 # --- HOME PAGE ---
 @app.route('/')
@@ -13,67 +23,41 @@ def home():
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if request.method == 'POST':
-        session['status'] = request.form['status']  # <--- store status in session
-        with open('static/individuals.csv', 'a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                request.form['first_name'],
-                request.form['last_name'],
-                request.form['phone'],
-                request.form['street'],
-                request.form['city'],
-                request.form['state'],
-                request.form['zip'],
-                request.form['status']
-            ])
+        new_user = User.create(
+            first_name=request.form['first_name'],
+            last_name=request.form['last_name'],
+            street_address=request.form['street'],
+            city=request.form['city'],
+            state=request.form['state'],
+            zip_code=request.form['zip'],
+            volunteer=request.form.get('status') == 'Volunteer',
+            admin=request.form.get('status') == 'Admin'
+        )
+        session['user_id'] = new_user.id
+        session['status'] = 'Admin' if new_user.admin else 'Volunteer'
         return redirect(url_for('profile'))
 
-    individuals = []
-    try:
-        with open('static/individuals.csv', newline='') as f:
-            reader = csv.reader(f)
-            individuals = list(reader)
-    except FileNotFoundError:
-        individuals = []
-
+    individuals = User.select()
     return render_template('profile.html', individuals=individuals)
 
 # --- REQUESTS PAGE ---
 @app.route('/requests', methods=['GET', 'POST'])
 def requests_page():
     if request.method == 'POST':
-        with open('static/requests.csv', 'a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                request.form['status'],
-                request.form['type'],
-                request.form['priority'],
-                request.form['zip'],
-                request.form['contact']
-            ])
+        Need.create(
+            type=request.form['type'],
+            priority=request.form['priority'],
+            requester=session['user_id']
+        )
         return redirect(url_for('requests_page'))
 
-    requests_data = []
-    try:
-        with open('static/requests.csv', newline='') as f:
-            reader = csv.reader(f)
-            requests_data = list(reader)
-    except FileNotFoundError:
-        requests_data = []
-
+    requests_data = Need.select()
     return render_template('requests.html', requests=requests_data)
 
 # --- RESOURCES PAGE ---
 @app.route('/resources')
 def resources():
-    resources_data = []
-    try:
-        with open('static/resources.csv', newline='') as f:
-            reader = csv.reader(f)
-            resources_data = list(reader)
-    except FileNotFoundError:
-        resources_data = []
-
+    resources_data = Resource.select()
     return render_template('resources.html', resources=resources_data)
 
 # --- RUN APP ---
