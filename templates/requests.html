@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Submit a Request</h2>
+
+<form method="POST">
+    <label>Need Type:</label>
+    <input type="text" name="type" required><br>
+
+    <label>Urgency Level:</label>
+    <select name="priority">
+        <option>Low</option>
+        <option>Medium</option>
+        <option>High</option>
+    </select><br>
+
+    <label>ZIP Code:</label>
+    <input type="text" name="zip" required><br>
+
+    <label>Status:</label>
+    <select name="status">
+        <option>Member</option>
+        <option>Volunteer</option>
+        <option>Admin</option>
+    </select><br>
+
+    <label>Best Contact:</label>
+    <input type="text" name="contact"><br>
+
+    <button type="submit">Submit</button>
+</form>
+
+{% if requests %}
+<p>Thank you for submitting. We will be in touch shortly.</p>
+
+{% if session.get('status') == 'Admin' %}
+    <h3>Pending Requests</h3>
+    <table>
+        <tr><th>Status</th><th>Need</th><th>Urgency</th><th>ZIP</th><th>Contact</th></tr>
+        {% for r in requests %}
+        <tr>
+            <td>{{ r[0] }}</td>
+            <td>{{ r[1] }}</td>
+            <td>{{ r[2] }}</td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p><em>You must be an Admin to view request data.</em></p>
+{% endif %}
+{% endif %}
+{% endblock %}
+

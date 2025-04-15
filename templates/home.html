@@ -1,0 +1,21 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="picture-section">
+    <img src="{{ url_for('static', filename='your_image.jpg') }}" alt="Community Banner">
+</div>
+
+<section class="centered">
+    <h2>Who are we?</h2>
+    <p>Together we are building a
+        Just and Sustainable Kentucky
+        As Kentucky youth, we hold the greatest stake in the future of our state. We accept our responsibility to create an environmentally sustainable, socially just, and economically vibrant Kentucky for the well-being of ourselves and future generations. We are leading our state away from a self-destructive path by helping to usher in a new government and a new economy that will respect and protect our workers, communities, and environment.
+        ​We are are strong and resilient. If we work together, we will win.</p>
+</section>
+<section class="centered">
+    <h2>How to use the guide?</h2>
+    <p>This guide will help you navigate and request the resources that you need. If you are looking for a resource, go to the Resources and Services
+        tab and look for the resource that you need, or search by the ZIP code to find resources available in your area!
+    </p>
+</section>
+{% endblock %}
